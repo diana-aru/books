@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Домашняя библиотека — распродажа</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#e8dfc8;
+    --paper-dark:#ddd0ae;
+    --card:#faf6ea;
+    --card-edge:#eee3c8;
+    --ink:#1f3d2e;
+    --ink-soft:#4a5a4d;
+    --stamp:#a13d2c;
+    --navy:#33415c;
+    --line:#c2b28a;
+    --gold:#8a6a34;
+    --shadow: 0 1px 0 rgba(31,61,46,0.05), 0 8px 16px -10px rgba(31,20,10,0.35);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse at top left, rgba(255,255,255,0.25), transparent 60%),
+      var(--paper);
+    background-attachment:fixed;
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--stamp); color:#fff; }
+
+  /* subtle paper texture */
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    pointer-events:none;
+    opacity:0.5;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(120,100,60,0.02) 0px, rgba(120,100,60,0.02) 1px, transparent 1px, transparent 3px);
+    z-index:0;
+  }
+
+  header.hero{
+    position:relative;
+    max-width:980px;
+    margin:0 auto;
+    padding:48px 20px 28px;
+    text-align:center;
+  }
+  .drawer-label{
+    display:inline-block;
+    background:var(--ink);
+    color:var(--card);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    padding:6px 16px;
+    border-radius:2px;
+    transform:rotate(-1deg);
+    box-shadow:var(--shadow);
+  }
+  h1.title{
+    font-family:'Spectral',serif;
+    font-weight:700;
+    font-size:clamp(34px,7vw,56px);
+    margin:18px 0 6px;
+    letter-spacing:-0.01em;
+  }
+  header.hero p.sub{
+    font-family:'Spectral',serif;
+    font-style:italic;
+    color:var(--ink-soft);
+    font-size:17px;
+    max-width:520px;
+    margin:0 auto 6px;
+  }
+  .call-range{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--gold);
+    letter-spacing:0.08em;
+    margin-top:14px;
+  }
+
+  /* search + tabs */
+  .controls{
+    max-width:980px;
+    margin:0 auto;
+    padding:0 20px 8px;
+    position:sticky;
+    top:0;
+    z-index:20;
+    background:linear-gradient(180deg, var(--paper) 78%, transparent);
+    padding-top:10px;
+  }
+  .search-slip{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:3px;
+    box-shadow:var(--shadow);
+    display:flex;
+    align-items:center;
+    padding:10px 14px;
+    gap:10px;
+    max-width:640px;
+    margin:0 auto 14px;
+  }
+  .search-slip svg{ flex-shrink:0; opacity:0.5; }
+  .search-slip input{
+    border:none; outline:none; background:transparent;
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+    width:100%;
+    color:var(--ink);
+  }
+  .search-slip input::placeholder{ color:#9a927a; }
+
+  .tabs{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    justify-content:center;
+    max-width:760px;
+    margin:0 auto 18px;
+  }
+  .tab{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.04em;
+    padding:7px 13px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-bottom:3px solid var(--line);
+    border-radius:2px 2px 0 0;
+    cursor:pointer;
+    color:var(--ink-soft);
+    transition:all .15s ease;
+    user-select:none;
+  }
+  .tab:hover{ color:var(--ink); }
+  .tab.active{
+    background:var(--ink);
+    color:var(--card);
+    border-color:var(--ink);
+    border-bottom:3px solid var(--stamp);
+  }
+  .count{
+    text-align:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+
+  main{
+    max-width:1080px;
+    margin:0 auto;
+    padding:10px 16px 80px;
+    position:relative;
+    z-index:1;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(230px,1fr));
+    gap:20px;
+  }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--card-edge);
+    border-radius:3px;
+    box-shadow:var(--shadow);
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .card:hover{ transform:translateY(-3px); box-shadow:0 4px 0 rgba(31,61,46,0.06), 0 16px 26px -12px rgba(31,20,10,0.4); }
+
+  .code-stamp{
+    position:absolute;
+    top:10px; left:10px;
+    z-index:3;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    letter-spacing:0.05em;
+    color:var(--stamp);
+    border:1.4px solid var(--stamp);
+    padding:2px 7px;
+    border-radius:2px;
+    background:rgba(250,246,234,0.88);
+    transform:rotate(-3deg);
+    text-transform:uppercase;
+  }
+
+  .thumb-wrap{
+    position:relative;
+    background:#d8cca8;
+    aspect-ratio:3/4;
+    overflow:hidden;
+    cursor:zoom-in;
+  }
+  .thumb-wrap img{
+    width:100%; height:100%;
+    object-fit:cover;
+    display:block;
+    transition:transform .3s ease;
+  }
+  .card:hover .thumb-wrap img{ transform:scale(1.04); }
+
+  .perf{
+    height:0;
+    border-top:1.5px dashed var(--line);
+    margin:0 14px;
+    position:relative;
+  }
+
+  .body{
+    padding:12px 14px 14px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    flex:1;
+  }
+  .cat-tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--navy);
+  }
+  h3.book-title{
+    font-family:'Spectral',serif;
+    font-weight:600;
+    font-size:16.5px;
+    line-height:1.28;
+    margin:0;
+    color:var(--ink);
+  }
+  p.author{
+    font-family:'Inter',sans-serif;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin:0;
+  }
+  .spacer{ flex:1; }
+  .ask-btn{
+    margin-top:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    background:var(--ink);
+    color:var(--card);
+    text-decoration:none;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+    letter-spacing:0.03em;
+    padding:9px 10px;
+    border-radius:2px;
+    transition:background .15s ease;
+  }
+  .ask-btn:hover{ background:var(--stamp); }
+  .ask-btn svg{ width:14px; height:14px; flex-shrink:0; }
+
+  .empty{
+    text-align:center;
+    padding:60px 20px;
+    font-family:'Spectral',serif;
+    font-style:italic;
+    color:var(--ink-soft);
+  }
+
+  footer{
+    text-align:center;
+    padding:20px 20px 50px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    letter-spacing:0.03em;
+  }
+  footer a{ color:var(--stamp); }
+
+  /* lightbox */
+  .lightbox{
+    position:fixed; inset:0;
+    background:rgba(20,20,15,0.86);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:100;
+    padding:24px;
+    cursor:zoom-out;
+  }
+  .lightbox.open{ display:flex; }
+  .lightbox img{
+    max-width:100%;
+    max-height:88vh;
+    border-radius:3px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  }
+
+  @media (max-width:480px){
+    .grid{ grid-template-columns:repeat(2,1fr); gap:12px; }
+    h3.book-title{ font-size:14.5px; }
+    .body{ padding:10px 10px 12px; gap:4px; }
+    header.hero{ padding:36px 16px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <span class="drawer-label">Каталог · распродажа</span>
+  <h1 class="title">Домашняя библиотека</h1>
+  <p class="sub">Книги живут своей жизнью, а нам пора расставаться. Ищите то, что откликнется — и пишите в Telegram.</p>
+  <div class="call-range">ИСТ · ПРАВ · ЯЗ · ЛИТ · СПР — 59 позиций</div>
+</header>
+
+<div class="controls">
+  <div class="search-slip">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="search" type="text" placeholder="Поиск по названию или автору…">
+  </div>
+  <div class="tabs" id="tabs"></div>
+  <div class="count" id="count"></div>
+</div>
+
+<main>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none;">Ничего не найдено в этом ящике каталога.</div>
+</main>
+
+<footer>
+  Вопросы и бронь — <a href="https://t.me/diana_nevermind" target="_blank">@diana_nevermind</a> в Telegram
+</footer>
+
+<div class="lightbox" id="lightbox"><img id="lightbox-img" src="" alt=""></div>
+
+<script>
+const TG_USER = "diana_nevermind";
+
+const CATS = {
+  "ИСТ": "История",
+  "ПРАВ": "Юриспруденция",
+  "ЯЗ": "Иностранные языки",
+  "ЛИТ": "Классика и литература",
+  "СПР": "Справочники"
+};
+
+const BOOKS = [
+  {c:"ИСТ",n:1,img:"9749",t:"Япония от А до Я",a:"Дж. Вардаман, М. Вардаман"},
+  {c:"ИСТ",n:2,img:"9750",t:"Карфаген",a:"Мадлен Ур-Мьедан"},
+  {c:"ИСТ",n:3,img:"9751",t:"Наполеон Бонапарт. Императорские максимы",a:""},
+  {c:"ИСТ",n:4,img:"9752",t:"Ришелье",a:"Хилэр Беллок"},
+  {c:"ИСТ",n:5,img:"9753",t:"Беседы императора",a:"о Наполеоне"},
+  {c:"ИСТ",n:6,img:"9754",t:"Всеобщая история, т. I–II",a:"Полибий · комплект, 2 тома"},
+  {c:"ИСТ",n:7,img:"9755",t:"Россия в мировом сообществе цивилизаций",a:"Л. И. Семенникова"},
+  {c:"ИСТ",n:8,img:"9756",t:"История медицины",a:"Т. С. Сорокина · учебник, 5-е изд."},
+  {c:"ИСТ",n:9,img:"9775",t:"История и право. Эволюция государства в странах Европы и США XVI–XX вв.",a:"А. Я. Юдовская · 8–11 кл."},
+  {c:"ИСТ",n:10,img:"9787",t:"Николай I",a:"Анри Труайя · серия ЖЗЛ"},
+  {c:"ИСТ",n:11,img:"9792",t:"История России с 1801 по 1917 год",a:""},
+  {c:"ИСТ",n:12,img:"9793",t:"Пётр Первый и его время",a:"Н. И. Павленко"},
+  {c:"ИСТ",n:13,img:"9794",t:"История России XIX века",a:"А. А. Левандовский"},
+  {c:"ИСТ",n:14,img:"9796",t:"Два царя: Фёдор и Борис",a:"Л. Е. Морозова"},
+  {c:"ИСТ",n:15,img:"9797",t:"3000 тестов и проверочных работ по истории",a:"для школьников и поступающих в вузы"},
+  {c:"ИСТ",n:16,img:"9799",t:"История государства Российского",a:"Н. М. Карамзин"},
+  {c:"ИСТ",n:17,img:"9800",t:"Конституция СССР 1924 года",a:"О. И. Чистяков"},
+  {c:"ИСТ",n:18,img:"9808",t:"Иммануил Кант",a:"Л. А. Калинников"},
+
+  {c:"ПРАВ",n:1,img:"9767",t:"История государства и права зарубежных стран",a:"учебно-методическое пособие"},
+  {c:"ПРАВ",n:2,img:"9768",t:"Конституции зарубежных стран",a:""},
+  {c:"ПРАВ",n:3,img:"9769",t:"Представительство и ценные бумаги в гражданском праве",a:""},
+  {c:"ПРАВ",n:4,img:"9770",t:"Доказательства и доказывание по уголовным делам",a:"С. А. Шейфер"},
+  {c:"ПРАВ",n:5,img:"9771",t:"Российское гражданское право, т. I",a:"учебник"},
+  {c:"ПРАВ",n:6,img:"9772",t:"Логика. Сборник упражнений",a:"Ю. В. Ивлев"},
+  {c:"ПРАВ",n:7,img:"9773",t:"Использование английского права в российских сделках",a:"И. Аверин, А. Рогоза"},
+  {c:"ПРАВ",n:8,img:"9774",t:"Корпоративное право",a:"под ред. И. С. Шиткиной · учебный курс"},
+  {c:"ПРАВ",n:9,img:"9776",t:"Инкотермс-2000. Постатейные комментарии с иллюстрациями",a:""},
+  {c:"ПРАВ",n:10,img:"9777",t:"Конституционное право зарубежных стран",a:"учебник для вузов, 3-е изд."},
+  {c:"ПРАВ",n:11,img:"9778",t:"Российская государственность и конституционное законодательство в России (1917–1993)",a:"Е. А. Лукьянова"},
+  {c:"ПРАВ",n:12,img:"9779",t:"Гражданский процесс. Хрестоматия",a:"под ред. М. К. Треушникова"},
+  {c:"ПРАВ",n:13,img:"9780",t:"Понятие о залоге в современном праве",a:"Л. А. Кассо"},
+  {c:"ПРАВ",n:14,img:"9781",t:"Применение Инкотермс в международном и внутреннем торговом обороте",a:"О. В. Фонотова"},
+  {c:"ПРАВ",n:15,img:"9782",t:"Теория современной конституции",a:"Т. Я. Хабриева, В. Е. Чиркин"},
+  {c:"ПРАВ",n:16,img:"9783",t:"Судебная бухгалтерия",a:"Е. С. Дубоносов · 3-е изд."},
+  {c:"ПРАВ",n:17,img:"9784",t:"Международное частное право, т. 1",a:"учебник в 2 томах"},
+  {c:"ПРАВ",n:18,img:"9785",t:"Трудовое правоотношение",a:"Н. Г. Александров"},
+  {c:"ПРАВ",n:19,img:"9786",t:"Корпоративные правоотношения",a:"Д. В. Ломакин"},
+
+  {c:"ЯЗ",n:1,img:"9757",t:"Учебник английского языка, ч. 1–2",a:"Н. А. Бонк и др. · комплект"},
+  {c:"ЯЗ",n:2,img:"9758",t:"Немецкий язык для юристов",a:"В. А. Ачкевич, О. Д. Рустамова"},
+  {c:"ЯЗ",n:3,img:"9759",t:"Interprète. Курс устного перевода (франц. язык)",a:"И. М. Матюшин, М. К. Огородов"},
+  {c:"ЯЗ",n:4,img:"9760",t:"Франция сегодня",a:"Т. Ю. Загрязкина"},
+  {c:"ЯЗ",n:5,img:"9761",t:"Großes Übungsbuch Grammatik",a:"Hueber · A2–B2"},
+  {c:"ЯЗ",n:6,img:"9762",t:"Themen 2 aktuell",a:"Kursbuch + Arbeitsbuch · комплект"},
+  {c:"ЯЗ",n:7,img:"9763",t:"Themen 1 aktuell",a:"Kursbuch + Arbeitsbuch · комплект"},
+  {c:"ЯЗ",n:8,img:"9764",t:"em neu Brückenkurs",a:"Kursbuch + Arbeitsbuch · Hueber"},
+  {c:"ЯЗ",n:9,img:"9765",t:"Rencontres, Niveau 1",a:"комплект: Méthode + Cahier"},
+  {c:"ЯЗ",n:10,img:"9766",t:"Rencontres, Niveau 2",a:"комплект: Méthode + Cahier + CD"},
+
+  {c:"СПР",n:1,img:"9805",t:"Black's Law Dictionary",a:"Third Pocket Edition"},
+  {c:"СПР",n:2,img:"9806",t:"Oxford Dictionary of Law",a:""},
+  {c:"СПР",n:3,img:"9804",t:"Вечные истины на вечной латыни",a:"De Verbo in Verbum"},
+  {c:"СПР",n:4,img:"9807",t:"Большая книга афоризмов",a:""},
+  {c:"СПР",n:5,img:"9809",t:"Большой справочник для школьников и поступающих в вузы. Литература",a:""},
+
+  {c:"ЛИТ",n:1,img:"9788",t:"Библиотека мировой литературы для детей",a:"М. Горький, М. А. Шолохов"},
+  {c:"ЛИТ",n:2,img:"9789",t:"Преступление и наказание",a:"Ф. М. Достоевский"},
+  {c:"ЛИТ",n:3,img:"9790",t:"А. И. Герцен в русской критике",a:"сборник статей"},
+  {c:"ЛИТ",n:4,img:"9798",t:"Анна Каренина",a:"Л. Н. Толстой"},
+  {c:"ЛИТ",n:5,img:"9801",t:"Птичьи голоса русской поэзии",a:""},
+  {c:"ЛИТ",n:6,img:"9802",t:"Пьесы",a:"А. П. Чехов"},
+  {c:"ЛИТ",n:7,img:"9803",t:"Мёртвые души. Выбранные места из переписки с друзьями",a:"Н. В. Гоголь"},
+];
+
+function tgLink(title){
+  const text = encodeURIComponent(`Здравствуйте! Меня заинтересовала книга «${title}» с вашего сайта.`);
+  return `https://t.me/${TG_USER}?text=${text}`;
+}
+
+const grid = document.getElementById('grid');
+const tabsEl = document.getElementById('tabs');
+const countEl = document.getElementById('count');
+const emptyEl = document.getElementById('empty');
+const searchEl = document.getElementById('search');
+
+let activeCat = "ALL";
+
+function makeTabs(){
+  const allTab = document.createElement('div');
+  allTab.className = 'tab active';
+  allTab.textContent = 'Все';
+  allTab.dataset.cat = 'ALL';
+  tabsEl.appendChild(allTab);
+  Object.keys(CATS).forEach(code=>{
+    const t = document.createElement('div');
+    t.className = 'tab';
+    t.textContent = CATS[code];
+    t.dataset.cat = code;
+    tabsEl.appendChild(t);
+  });
+  tabsEl.addEventListener('click', e=>{
+    const el = e.target.closest('.tab');
+    if(!el) return;
+    activeCat = el.dataset.cat;
+    [...tabsEl.children].forEach(c=>c.classList.toggle('active', c===el));
+    render();
+  });
+}
+
+function cardHtml(b){
+  const code = `${b.c}-${String(b.n).padStart(2,'0')}`;
+  return `
+  <div class="card" data-cat="${b.c}" data-search="${(b.t+' '+b.a).toLowerCase()}">
+    <span class="code-stamp">${code}</span>
+    <div class="thumb-wrap" data-img="covers/${b.img}.jpg">
+      <img src="covers/${b.img}.jpg" alt="${b.t}" loading="lazy">
+    </div>
+    <div class="perf"></div>
+    <div class="body">
+      <span class="cat-tag">${CATS[b.c]}</span>
+      <h3 class="book-title">${b.t}</h3>
+      ${b.a ? `<p class="author">${b.a}</p>` : ``}
+      <span class="spacer"></span>
+      <a class="ask-btn" href="${tgLink(b.t)}" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.5 4.5L2.7 12.1c-1.2.5-1.2 1.2-.2 1.5l4.8 1.5 1.9 5.7c.2.6.4.8.9.8.5 0 .7-.2 1-.5l2.4-2.3 4.9 3.6c.9.5 1.5.2 1.8-.8l3.2-15.2c.4-1.3-.4-1.8-1.4-1.4z"/></svg>
+        Спросить в Telegram
+      </a>
+    </div>
+  </div>`;
+}
+
+function render(){
+  const q = searchEl.value.trim().toLowerCase();
+  const filtered = BOOKS.filter(b=>{
+    const catOk = activeCat === 'ALL' || b.c === activeCat;
+    const qOk = !q || (b.t+' '+b.a).toLowerCase().includes(q);
+    return catOk && qOk;
+  });
+  grid.innerHTML = filtered.map(cardHtml).join('');
+  emptyEl.style.display = filtered.length ? 'none' : 'block';
+  countEl.textContent = `${filtered.length} ${wordForm(filtered.length)} на полке`;
+}
+
+function wordForm(n){
+  const mod10 = n%10, mod100 = n%100;
+  if(mod10===1 && mod100!==11) return 'книга';
+  if([2,3,4].includes(mod10) && ![12,13,14].includes(mod100)) return 'книги';
+  return 'книг';
+}
+
+searchEl.addEventListener('input', render);
+
+// lightbox
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightbox-img');
+grid.addEventListener('click', e=>{
+  const wrap = e.target.closest('.thumb-wrap');
+  if(!wrap) return;
+  lightboxImg.src = wrap.dataset.img;
+  lightbox.classList.add('open');
+});
+lightbox.addEventListener('click', ()=> lightbox.classList.remove('open'));
+
+makeTabs();
+render();
+</script>
+
+</body>
+</html>
